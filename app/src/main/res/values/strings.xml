@@ -1,0 +1,5 @@
+<resources>
+    <string name="app_name">GestureFlow</string>
+    <string name="accessibility_service_label">GestureFlow Service</string>
+    <string name="accessibility_service_description">Enables one-handed operation using micro-motion gestures for Back, Multitasking, and Notification actions.</string>
+</resources>
