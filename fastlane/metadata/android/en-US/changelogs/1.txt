@@ -1,0 +1,10 @@
+What's new in v1.1:
+
+• Added gesture sensitivity controls
+• New intuitive gestures management screen
+• Improved accessibility service stability
+• Enhanced user interface with Material3 design
+• Added onboarding experience for new users
+• Implemented real-time gesture status feedback
+• Added privacy notice and usage instructions
+• Bug fixes and performance improvements

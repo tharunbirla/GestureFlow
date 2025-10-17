@@ -13,6 +13,9 @@ class GestureFlowAccessibilityService : AccessibilityService(), SensorDataListen
     private val TAG = "GestureFlowService"
     private lateinit var sensorDataManager: SensorDataManager
     private lateinit var gestureDetector: GestureDetector // Declare GestureDetector
+    private val PREFS_NAME = "gestureflow_prefs"
+    private val PREF_KEY_SENSITIVITY = "sensitivity"
+    private var prefsListener: android.content.SharedPreferences.OnSharedPreferenceChangeListener? = null
 
     override fun onServiceConnected() {
         super.onServiceConnected()
@@ -21,8 +24,20 @@ class GestureFlowAccessibilityService : AccessibilityService(), SensorDataListen
         // Initialize SensorDataManager, passing this service as the context and listener
         sensorDataManager = SensorDataManager(this, this)
 
-        // Initialize GestureDetector, passing this service as the GestureListener
-        gestureDetector = GestureDetector(this)
+        // Read saved sensitivity from SharedPreferences and initialize GestureDetector with it
+        val sharedPrefs = getSharedPreferences(PREFS_NAME, android.content.Context.MODE_PRIVATE)
+        val initialSensitivity = sharedPrefs.getFloat(PREF_KEY_SENSITIVITY, 0.5f)
+        gestureDetector = GestureDetector(this, initialSensitivity)
+
+        // Listen for preference changes so we can update sensitivity at runtime
+        prefsListener = android.content.SharedPreferences.OnSharedPreferenceChangeListener { _, key ->
+            if (key == PREF_KEY_SENSITIVITY) {
+                val newVal = sharedPrefs.getFloat(PREF_KEY_SENSITIVITY, 0.5f)
+                gestureDetector.setSensitivity(newVal)
+                Log.d(TAG, "SharedPreferences changed: sensitivity=$newVal")
+            }
+        }
+        prefsListener?.let { sharedPrefs.registerOnSharedPreferenceChangeListener(it) }
 
         sensorDataManager.startListening()
     }
@@ -41,6 +56,12 @@ class GestureFlowAccessibilityService : AccessibilityService(), SensorDataListen
         super.onDestroy()
         Log.d(TAG, "GestureFlow Accessibility Service Destroyed.")
         sensorDataManager.stopListening() // Always unregister sensors when service is destroyed
+        // Unregister preference listener
+        try {
+            prefsListener?.let { getSharedPreferences(PREFS_NAME, android.content.Context.MODE_PRIVATE).unregisterOnSharedPreferenceChangeListener(it) }
+        } catch (e: Exception) {
+            Log.w(TAG, "Failed to unregister prefs listener: ${e.message}")
+        }
     }
 
     /**
@@ -70,15 +91,23 @@ class GestureFlowAccessibilityService : AccessibilityService(), SensorDataListen
         // This callback is triggered when GestureDetector identifies a gesture
         Log.d(TAG, "Detected gesture: $gesture")
 
+        // Check user preferences for whether each gesture is enabled
+        val prefs = getSharedPreferences(PREFS_NAME, android.content.Context.MODE_PRIVATE)
         when (gesture) {
             Gesture.BACK -> {
-                triggerGlobalAction(GLOBAL_ACTION_BACK)
+                val enabled = prefs.getBoolean("gesture_back_enabled", true)
+                if (enabled) triggerGlobalAction(GLOBAL_ACTION_BACK)
+                else Log.d(TAG, "Back gesture disabled by user preferences")
             }
             Gesture.MULTITASKING -> {
-                triggerGlobalAction(GLOBAL_ACTION_RECENTS) // GLOBAL_ACTION_RECENTS usually means multitasking
+                val enabled = prefs.getBoolean("gesture_multitasking_enabled", true)
+                if (enabled) triggerGlobalAction(GLOBAL_ACTION_RECENTS)
+                else Log.d(TAG, "Multitasking gesture disabled by user preferences")
             }
             Gesture.NOTIFICATION_PULL_DOWN -> {
-                triggerGlobalAction(GLOBAL_ACTION_NOTIFICATIONS)
+                val enabled = prefs.getBoolean("gesture_notifications_enabled", true)
+                if (enabled) triggerGlobalAction(GLOBAL_ACTION_NOTIFICATIONS)
+                else Log.d(TAG, "Notification pull-down gesture disabled by user preferences")
             }
             Gesture.NONE -> {
                 // Do nothing
