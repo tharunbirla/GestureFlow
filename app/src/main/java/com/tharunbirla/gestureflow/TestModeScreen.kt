@@ -29,6 +29,7 @@ import androidx.compose.ui.unit.dp
 import kotlinx.coroutines.delay
 import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material.icons.filled.Notifications
+import androidx.compose.material.icons.filled.Speed
 import androidx.compose.material.icons.filled.ViewCarousel
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -153,25 +154,34 @@ fun SensitivityControl(sensitivity: Float, onSensitivityChange: (Float) -> Unit)
             modifier = Modifier.padding(20.dp),
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
-            Text(
-                "Sensitivity Adjustment",
-                style = MaterialTheme.typography.labelLarge,
-                color = MaterialTheme.colorScheme.onSecondaryContainer
-            )
+            Row(verticalAlignment = Alignment.CenterVertically) {
+                Icon(
+                    imageVector = Icons.Default.Speed,
+                    contentDescription = null,
+                    tint = MaterialTheme.colorScheme.onSecondaryContainer,
+                    modifier = Modifier.size(18.dp)
+                )
+                Spacer(modifier = Modifier.width(8.dp))
+                Text(
+                    "Sensitivity Adjustment",
+                    style = MaterialTheme.typography.labelLarge,
+                    color = MaterialTheme.colorScheme.onSecondaryContainer
+                )
+            }
             Spacer(modifier = Modifier.height(16.dp))
 
             Row(
                 verticalAlignment = Alignment.CenterVertically,
                 modifier = Modifier.fillMaxWidth()
             ) {
-                Text("🐌", style = MaterialTheme.typography.titleLarge) // Snail
+                Text("Stable", style = MaterialTheme.typography.labelMedium, color = MaterialTheme.colorScheme.onSecondaryContainer)
                 Slider(
                     value = sensitivity,
                     onValueChange = onSensitivityChange,
                     valueRange = 0.1f..1.0f,
                     modifier = Modifier.weight(1f).padding(horizontal = 12.dp)
                 )
-                Text("🐇", style = MaterialTheme.typography.titleLarge) // Rabbit
+                Text("Sensitive", style = MaterialTheme.typography.labelMedium, color = MaterialTheme.colorScheme.onSecondaryContainer)
             }
             Text(
                 "%.1f".format(sensitivity),

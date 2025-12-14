@@ -1,0 +1,4 @@
+Refined UI with new professional controls.
+Added a new Test Playground to practice gestures safely.
+Introduced vibration feedback for better gesture recognition.
+Fixed bugs related to service status updates.
